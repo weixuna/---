@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "usart3.h": "c",
+        "stm32f10x.h": "c",
+        "string.h": "c",
+        "led.h": "c",
+        "stdarg.h": "c",
+        "stdio.h": "c",
+        "oled.h": "c",
+        "lora.h": "c",
+        "iot.h": "c",
+        "sys.h": "c",
+        "stdbool.h": "c"
+    }
+}

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Weekly TVOCerature Bar Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+        flex-direction: column;
+      }
+      #main {
+        width: 90vw;
+        height: 50vh;
+        max-width: 600px;
+        max-height: 400px;
+      }
+      .TVOCData {
+        display: flex;
+        justify-content: space-between;
+        width: 90vw;
+        max-width: 600px;
+        margin-top: 20px;
+      }
+      .TVOCData div {
+        font-size: 4vw;
+        margin-left: 2vw;
+        margin-right: 2vw;
+      }
+      .bt {
+        width: 90vw;
+        max-width: 600px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 20px;
+      }
+      .getButton {
+        width: 80vw;
+        max-width: 460px;
+        height: 10vh;
+        max-height: 70px;
+        font-size: 4vw;
+        border-radius: 10px;
+        color: white;
+        background-color: #007bff;
+        text-align: center;
+        line-height: 10vh;
+        max-line-height: 70px;
+      }
+      @media (min-width: 600px) {
+        .TVOCData div {
+          font-size: 16px;
+          margin-left: 75px;
+          margin-right: 75px;
+        }
+        .getButton {
+          font-size: 20px;
+          line-height: 70px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main"></div>
+    <div class="TVOCData">
+      <div class="TVOCDataNormal">TVOC数值：</div>
+      <div class="TVOCDataAbnormal">正常</div>
+    </div>
+    <div class="bt">
+      <button class="getButton" onclick="getDeviceData()">刷新数据</button>
+    </div>
+    <script type="text/javascript">
+      var myChart = echarts.init(document.getElementById("main"));
+
+      function getDeviceData() {
+        axios
+          .get(
+            "https://7e002697-6d24-4ba0-9319-e297bd2a6686-00-1h5t1vaxnfjag.pike.replit.dev/"
+          )
+          .then(function (response) {
+            var deviceData = response.data;
+            processAndDisplayData(deviceData);
+          })
+          .catch(function (error) {
+            console.error("请求失败", error);
+            alert("请求失败，请检查控制台以获取详细信息。");
+          });
+      }
+
+      function processAndDisplayData(deviceData) {
+        var today = moment().startOf("day"); // 获取今天的开始时间（零点）
+        var startOfWeek = today.clone().startOf("isoWeek"); // 获取本周开始的时间（星期一）
+        var endOfWeek = today.clone().endOf("isoWeek"); // 获取本周结束的时间（星期日）
+
+        var dailyTVOCeratures = {
+          星期一: [],
+          星期二: [],
+          星期三: [],
+          星期四: [],
+          星期五: [],
+          星期六: [],
+          星期日: [],
+        };
+
+        deviceData.forEach(function (record) {
+          var receiveTime = record.receive_time;
+          var eventDate = moment(receiveTime).utcOffset("+00:00"); // 使用 moment.js 解析日期时间，并指定时区为 UTC
+
+          // 确保日期在本周范围内（包括本周的开始日期但不包括本周的结束日期）
+          if (eventDate.isBetween(startOfWeek, endOfWeek, "day", "[)")) {
+            // 获取星期几的中文名称
+            var dayOfWeek = eventDate.format("dddd"); // 使用 moment.js 获取完整的星期名称
+            switch (dayOfWeek) {
+              case "Monday":
+                dayOfWeek = "星期一";
+                break;
+              case "Tuesday":
+                dayOfWeek = "星期二";
+                break;
+              case "Wednesday":
+                dayOfWeek = "星期三";
+                break;
+              case "Thursday":
+                dayOfWeek = "星期四";
+                break;
+              case "Friday":
+                dayOfWeek = "星期五";
+                break;
+              case "Saturday":
+                dayOfWeek = "星期六";
+                break;
+              case "Sunday":
+                dayOfWeek = "星期日";
+                break;
+            }
+
+            // 获取TVOC
+            var TVOC = record.content.body.services[0].properties.TVOC;
+            if (!isNaN(TVOC)) {
+              dailyTVOCeratures[dayOfWeek].push(TVOC);
+            }
+          }
+        });
+
+        // 计算每天的最高TVOC
+        var maxTVOCeratures = {
+          星期一: dailyTVOCeratures["星期一"].slice(-1)[0] || 0,
+          星期二: dailyTVOCeratures["星期二"].slice(-1)[0] || 0,
+          星期三: dailyTVOCeratures["星期三"].slice(-1)[0] || 0,
+          星期四: dailyTVOCeratures["星期四"].slice(-1)[0] || 0,
+          星期五: dailyTVOCeratures["星期五"].slice(-1)[0] || 0,
+          星期六: dailyTVOCeratures["星期六"].slice(-1)[0] || 0,
+          星期日: dailyTVOCeratures["星期日"].slice(-1)[0] || 0,
+        };
+
+        var daysOfWeek = [
+          "星期一",
+          "星期二",
+          "星期三",
+          "星期四",
+          "星期五",
+          "星期六",
+          "星期日",
+        ];
+
+        // 获取当天的中文星期几
+        var todayChinese = moment().format("dddd");
+        switch (todayChinese) {
+          case "Monday":
+            todayChinese = "星期一";
+            break;
+          case "Tuesday":
+            todayChinese = "星期二";
+            break;
+          case "Wednesday":
+            todayChinese = "星期三";
+            break;
+          case "Thursday":
+            todayChinese = "星期四";
+            break;
+          case "Friday":
+            todayChinese = "星期五";
+            break;
+          case "Saturday":
+            todayChinese = "星期六";
+            break;
+          case "Sunday":
+            todayChinese = "星期日";
+            break;
+        }
+
+        var option = {
+          tooltip: {
+            trigger: "axis",
+            formatter: "{a} <br/>{b} : {c}ppm",
+          },
+          xAxis: {
+            type: "category",
+            data: daysOfWeek,
+            axisLabel: {
+              formatter: function (value) {
+                return value;
+              },
+              fontSize: "2.5vw", // 调整标签的字体大小以适应移动视图
+              fontWeight: "bold",
+            },
+            axisLine: {
+              show: false, // 隐藏轴线
+            },
+            axisTick: {
+              show: false, // 隐藏刻度线
+            },
+            splitLine: {
+              show: false, // 隐藏分割线
+            },
+          },
+          yAxis: {
+            type: "value",
+            axisLabel: {
+              formatter: "{value} ppm",
+            },
+          },
+          series: [
+            {
+              name: "TVOC",
+              data: daysOfWeek.map((day) => ({
+                value: maxTVOCeratures[day],
+                name: day,
+                itemStyle: {
+                  barBorderRadius: [8, 8, 8, 8], // 设置圆角
+                },
+              })),
+              type: "bar",
+              showBackground: false,
+              backgroundStyle: {
+                color: "rgba(180, 180, 180, 0.2)",
+              },
+              label: {
+                show: true,
+                position: "top",
+                formatter: "{c}ppm",
+                fontSize: "2.5vw",
+              },
+            },
+          ],
+        };
+
+        myChart.setOption(option);
+
+        // 显示TVOC状态
+        var maxTVOCToday = maxTVOCeratures[todayChinese];
+        document.querySelector(".TVOCDataNormal").textContent =
+          "TVOC数值：" + maxTVOCToday + "ppm";
+        var TVOCStatus = "正常";
+        if (maxTVOCToday > 30) {
+          TVOCStatus = "TVOC过高";
+        } else if (maxTVOCToday < 25) {
+          TVOCStatus = "TVOC过低";
+        }
+        document.querySelector(".TVOCDataAbnormal").textContent = TVOCStatus;
+      }
+
+      // 加载数据并处理
+      getDeviceData();
+    </script>
+  </body>
+</html>

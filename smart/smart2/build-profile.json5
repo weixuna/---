@@ -1,0 +1,49 @@
+{
+  "app": {
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\黎明\\.ohos\\config\\auto_debug_smart2_com.example.smart_30086000705158383.cer",
+          "storePassword": "0000001B9681519F0971AD91EE3329BA40D8A23626834367C952C9A6FB64EC44A9F6A6C1EF751186D6A6DF",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001B186187ECAF546CB7E49FCC5799AA0AA4786C7C47FE70B3E9E92B62BC355F527CA48A2D9EA19F42",
+          "profile": "C:\\Users\\黎明\\.ohos\\config\\auto_debug_smart2_com.example.smart_30086000705158383.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\黎明\\.ohos\\config\\auto_debug_smart2_com.example.smart_30086000705158383.p12"
+        }
+      }
+    ],
+    "compileSdkVersion": 9,
+    "compatibleSdkVersion": 9,
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug",
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}

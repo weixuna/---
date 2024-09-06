@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <title>发起GET请求</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+      /* 设置全局样式 */
+      body {
+        font-family: Arial, sans-serif;
+        padding: 10px;
+      }
+
+      /* 设置表格样式 */
+      table {
+        width: 100%;
+        max-width: 600px;
+        margin: auto;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        table-layout: fixed;
+      }
+
+      th,
+      td {
+        padding: 8px;
+        text-align: center;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      th {
+        background-color: #f2f2f2;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .sort-icon {
+        width: 10px;
+        height: 10px;
+        margin-left: 5px;
+        display: inline-block;
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+
+      .sort-asc {
+        background-image: url("image/shengxu.png");
+      }
+
+      .sort-desc {
+        background-image: url("image/daoxu.png");
+      }
+    </style>
+</head>
+<body>
+<div id="data-container">
+    <table id="data-table">
+        <thead>
+        <tr>
+            <th id="date-header">
+                时间
+                <span class="sort-icon" id="sort-icon"></span>
+            </th>
+            <th>历史记录</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td colspan="2">Loading...</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+      document.addEventListener("DOMContentLoaded", function () {
+        getDeviceData();
+
+        // 添加排序图标点击事件
+        const dateHeader = document.getElementById("date-header");
+        dateHeader.addEventListener("click", function () {
+          sortData();
+        });
+      });
+
+      let sortOrder = "asc"; // 默认排序顺序
+      let deviceData = []; // 存储数据
+
+      function getDeviceData() {
+        axios
+          .get(
+            "https://7e002697-6d24-4ba0-9319-e297bd2a6686-00-1h5t1vaxnfjag.pike.replit.dev/"
+          )
+          .then(function (response) {
+            deviceData = response.data;
+            sortAndDisplayData(); // 数据加载完成后进行初始排序和显示
+          })
+          .catch(function (error) {
+            console.error("请求失败", error);
+            alert("请求失败，请检查控制台以获取详细信息。");
+          });
+      }
+
+      function displayData(data) {
+        const tableBody = document.querySelector("#data-table tbody");
+        let html = "";
+        data.forEach((item) => {
+          const receiveTime = item.receive_time
+            .replace("T", " ")
+            .replace("Z", ""); // 去掉 'T' 和 'Z'
+          const Soil = item.content.body.services[0]?.properties.Soil;
+
+          if (Soil !== undefined) {
+            html += `
+            <tr>
+              <td>${receiveTime}</td>
+              <td>Soil：${Soil}</td>
+            </tr>
+          `;
+          }
+        });
+        tableBody.innerHTML = html;
+      }
+
+      function sortAndDisplayData() {
+        // 按照 receive_time 字符串的字典顺序进行排序
+        deviceData.sort((a, b) => {
+          if (sortOrder === "asc") {
+            return a.receive_time.localeCompare(b.receive_time);
+          } else {
+            return b.receive_time.localeCompare(a.receive_time);
+          }
+        });
+        displayData(deviceData);
+
+        // 更新排序图标
+        const sortIcon = document.getElementById("sort-icon");
+        sortIcon.className =
+          sortOrder === "asc" ? "sort-icon sort-asc" : "sort-icon sort-desc";
+      }
+
+      function sortData() {
+        // 切换排序顺序
+        sortOrder = sortOrder === "asc" ? "desc" : "asc";
+
+        // 重新排序并显示数据
+        sortAndDisplayData();
+      }
+    </script>
+</body>
+</html>
